@@ -31,7 +31,8 @@ type Action =
   | { type: 'ADD_CHECKLIST_ITEM'; payload: ChecklistItem }
   | { type: 'TOGGLE_CHECKLIST_ITEM'; payload: string }
   | { type: 'DELETE_CHECKLIST_ITEM'; payload: string }
-  | { type: 'SET_INITIAL_STATE'; payload: TasksState };
+  | { type: 'SET_INITIAL_STATE'; payload: TasksState }
+  | { type: 'REORDER_TASKS'; payload: string[] };
 
 // REDUCER
 const tasksReducer = (state: TasksState, action: Action): TasksState => {
@@ -54,6 +55,12 @@ const tasksReducer = (state: TasksState, action: Action): TasksState => {
           task.id === action.payload ? { ...task, completed: !task.completed } : task
         ),
       };
+    case 'REORDER_TASKS': {
+      const taskMap = new Map(state.tasks.map(task => [task.id, task]));
+      const orderedTasks = action.payload.map(id => taskMap.get(id)).filter((t): t is Task => !!t);
+      const remainingTasks = state.tasks.filter(task => !action.payload.includes(task.id));
+      return { ...state, tasks: [...orderedTasks, ...remainingTasks] };
+    }
     case 'ADD_CHECKLIST_ITEM':
         if (state.checklistItems.length >= 5) return state;
         return { ...state, checklistItems: [...state.checklistItems, action.payload] };
