@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { format } from 'date-fns';
+import { format, isPast } from 'date-fns';
 import type { Task } from '@/lib/types';
 import { useTasks } from '@/contexts/TasksContext';
 import { cn } from '@/lib/utils';
@@ -9,7 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Edit, MoreVertical, Trash2 } from 'lucide-react';
+import { Edit, MoreVertical, Trash2, CalendarIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { categoryIcons, priorityStyles } from '@/components/icons';
 import { TaskFormDialog } from './TaskFormDialog';
@@ -35,6 +35,8 @@ export function TaskCard({ task }: TaskCardProps) {
     dispatch({ type: 'DELETE_TASK', payload: task.id });
     setIsDeleting(false);
   };
+  
+  const isOverdue = !task.completed && isPast(task.dueDate);
 
   return (
     <>
@@ -50,7 +52,7 @@ export function TaskCard({ task }: TaskCardProps) {
             className="mt-1"
             aria-label={`Mark task ${task.title} as ${task.completed ? 'incomplete' : 'complete'}`}
           />
-          <div className="flex-grow grid gap-1">
+          <div className="flex-grow grid gap-2">
             <label
               htmlFor={`task-${task.id}`}
               className={cn(
@@ -60,7 +62,7 @@ export function TaskCard({ task }: TaskCardProps) {
             >
               {task.title}
             </label>
-            <div className="flex items-center gap-4 text-xs text-muted-foreground">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
               <div className="flex items-center gap-1">
                 <CategoryIcon className="h-3 w-3" />
                 <span>{task.category}</span>
@@ -68,6 +70,13 @@ export function TaskCard({ task }: TaskCardProps) {
               <div className={cn("flex items-center gap-1", priorityStyles[task.priority].color)}>
                 <PriorityIcon className="h-3 w-3" />
                 <span>{task.priority}</span>
+              </div>
+              <div className={cn(
+                "flex items-center gap-1",
+                isOverdue && "text-destructive font-medium"
+              )}>
+                <CalendarIcon className="h-3 w-3" />
+                <span>{format(task.dueDate, 'MMM d')}</span>
               </div>
             </div>
           </div>

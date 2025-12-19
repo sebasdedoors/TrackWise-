@@ -13,7 +13,7 @@ const initialState: TasksState = {
   tasks: [
     { id: '1', title: 'Design new dashboard layout', category: 'Work', priority: 'High', dueDate: new Date(), completed: false },
     { id: '2', title: 'Read chapter 3 of chemistry book', category: 'School', priority: 'Medium', dueDate: new Date(), completed: false },
-    { id: '3', title: 'Go for a 30-minute run', category: 'Health', priority: 'Low', dueDate: new Date(), completed: true },
+    { id: '3', title: 'Go for a 30-minute run', category: 'Health', priority: 'Low', dueDate: new Date(), completed: true, completionDate: new Date() },
     { id: '4', title: 'Schedule dentist appointment', category: 'Personal', priority: 'Medium', dueDate: new Date(), completed: false },
   ],
   checklistItems: [
@@ -51,9 +51,17 @@ const tasksReducer = (state: TasksState, action: Action): TasksState => {
     case 'TOGGLE_TASK_COMPLETION':
       return {
         ...state,
-        tasks: state.tasks.map((task) =>
-          task.id === action.payload ? { ...task, completed: !task.completed } : task
-        ),
+        tasks: state.tasks.map((task) => {
+          if (task.id === action.payload) {
+            const isCompleted = !task.completed;
+            return { 
+              ...task, 
+              completed: isCompleted,
+              completionDate: isCompleted ? new Date() : undefined,
+            };
+          }
+          return task;
+        }),
       };
     case 'REORDER_TASKS': {
       const taskMap = new Map(state.tasks.map(task => [task.id, task]));
@@ -98,7 +106,8 @@ export const TasksProvider = ({ children }: { children: ReactNode }) => {
         const parsedState = JSON.parse(storedState);
         parsedState.tasks = parsedState.tasks.map((task: any) => ({
             ...task,
-            dueDate: new Date(task.dueDate)
+            dueDate: new Date(task.dueDate),
+            completionDate: task.completionDate ? new Date(task.completionDate) : undefined,
         }));
         dispatch({ type: 'SET_INITIAL_STATE', payload: parsedState });
       }
