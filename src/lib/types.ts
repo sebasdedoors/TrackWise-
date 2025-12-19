@@ -8,6 +8,7 @@ export interface Task {
   priority: Priority;
   dueDate: Date;
   completed: boolean;
+  completionDate?: Date;
 }
 
 export interface ChecklistItem {
