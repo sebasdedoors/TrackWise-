@@ -1,0 +1,28 @@
+"use client";
+
+import React from 'react';
+import type { Task } from '@/lib/types';
+import { TaskCard } from './TaskCard';
+
+interface TaskListProps {
+  tasks: Task[];
+}
+
+export function TaskList({ tasks }: TaskListProps) {
+  if (tasks.length === 0) {
+    return (
+      <div className="text-center py-16 px-4 border-2 border-dashed rounded-lg">
+        <h2 className="text-xl font-semibold text-muted-foreground">No tasks for today!</h2>
+        <p className="mt-2 text-sm text-muted-foreground">Try adjusting your filters or adding a new task.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {tasks.map(task => (
+        <TaskCard key={task.id} task={task} />
+      ))}
+    </div>
+  );
+}
