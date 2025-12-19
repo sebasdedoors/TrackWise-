@@ -15,7 +15,7 @@ const TaskSchema = z.object({
   title: z.string(),
   category: z.string(),
   priority: z.string(),
-  dueDate: z.date(),
+  dueDate: z.string().datetime(), 
 });
 
 const SuggestTaskOrderInputSchema = z.object({
