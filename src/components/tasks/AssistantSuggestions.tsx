@@ -27,7 +27,11 @@ export function AssistantSuggestions({ tasks }: { tasks: Task[] }) {
     setSuggestion(null);
 
     try {
-      const result = await suggestTaskOrder({ tasks });
+      const tasksForAI = tasks.map(task => ({
+        ...task,
+        dueDate: task.dueDate.toISOString(),
+      }));
+      const result = await suggestTaskOrder({ tasks: tasksForAI });
       setSuggestion(result);
     } catch (e) {
       setError('Hubo un error al obtener la sugerencia. Por favor, inténtalo de nuevo.');
