@@ -4,6 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { useTasks } from '@/contexts/TasksContext';
 import { TaskList } from '@/components/tasks/TaskList';
 import { QuickChecklist } from '@/components/tasks/QuickChecklist';
+import { AssistantSuggestions } from '@/components/tasks/AssistantSuggestions';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -76,6 +77,7 @@ export function TaskDashboard() {
         <TaskList tasks={filteredTasks} />
       </div>
       <div className="space-y-6 lg:mt-16">
+        <AssistantSuggestions tasks={todayTasks} />
         <QuickChecklist />
       </div>
     </div>
