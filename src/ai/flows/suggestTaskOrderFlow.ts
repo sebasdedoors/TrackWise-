@@ -74,7 +74,16 @@ const suggestTaskOrderFlow = ai.defineFlow(
         reasoning: 'No hay tareas para sugerir un orden.',
       };
     }
-    const { output } = await prompt(input);
-    return output!;
+    try {
+      const { output } = await prompt(input);
+      return output!;
+    } catch (error) {
+      console.error('Error suggesting task order:', error);
+      return {
+        orderedTaskIds: input.tasks.map((t) => t.id),
+        reasoning:
+          'Error al generar sugerencias de la IA. Mostrando el orden original de las tareas.',
+      };
+    }
   }
 );
