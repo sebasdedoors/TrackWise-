@@ -9,7 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Edit, MoreVertical, Trash2, CalendarIcon } from 'lucide-react';
+import { Edit, MoreVertical, Trash2, CalendarIcon, Star } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { categoryIcons, priorityStyles } from '@/components/icons';
 import { TaskFormDialog } from './TaskFormDialog';
@@ -17,9 +17,11 @@ import { DeleteConfirmationDialog } from './DeleteConfirmationDialog';
 
 interface TaskCardProps {
   task: Task;
+  onStartFocus: (task: Task) => void;
+  isFocusModeActive: boolean;
 }
 
-export function TaskCard({ task }: TaskCardProps) {
+export function TaskCard({ task, onStartFocus, isFocusModeActive }: TaskCardProps) {
   const { dispatch } = useTasks();
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -28,6 +30,7 @@ export function TaskCard({ task }: TaskCardProps) {
   const PriorityIcon = priorityStyles[task.priority].icon;
 
   const handleToggle = () => {
+    if (isFocusModeActive) return;
     dispatch({ type: 'TOGGLE_TASK_COMPLETION', payload: task.id });
   };
 
@@ -42,7 +45,8 @@ export function TaskCard({ task }: TaskCardProps) {
     <>
       <Card className={cn(
         "transition-all duration-300",
-        task.completed ? "bg-muted/50" : "bg-card"
+        task.completed ? "bg-muted/50" : "bg-card",
+        isFocusModeActive && "opacity-50 pointer-events-none"
       )}>
         <CardContent className="p-4 flex items-start gap-4">
           <Checkbox
@@ -51,6 +55,7 @@ export function TaskCard({ task }: TaskCardProps) {
             onCheckedChange={handleToggle}
             className="mt-1"
             aria-label={`Mark task ${task.title} as ${task.completed ? 'incomplete' : 'complete'}`}
+            disabled={isFocusModeActive}
           />
           <div className="flex-grow grid gap-2">
             <label
@@ -80,9 +85,15 @@ export function TaskCard({ task }: TaskCardProps) {
               </div>
             </div>
           </div>
+          {!isFocusModeActive && (
+            <Button variant="outline" size="sm" onClick={() => onStartFocus(task)}>
+              <Star className="mr-2 h-4 w-4" />
+              Focus
+            </Button>
+          )}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
+              <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" disabled={isFocusModeActive}>
                 <MoreVertical className="h-4 w-4" />
                 <span className="sr-only">More options</span>
               </Button>

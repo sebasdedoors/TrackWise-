@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -34,6 +34,7 @@ interface TaskFormDialogProps {
 
 export function TaskFormDialog({ open, onOpenChange, taskToEdit }: TaskFormDialogProps) {
   const { dispatch } = useTasks();
+  const [isCalendarOpen, setCalendarOpen] = useState(false);
   const form = useForm<TaskFormValues>({
     resolver: zodResolver(taskSchema),
     defaultValues: {
@@ -148,7 +149,7 @@ export function TaskFormDialog({ open, onOpenChange, taskToEdit }: TaskFormDialo
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>Due Date</FormLabel>
-                  <Popover>
+                  <Popover open={isCalendarOpen} onOpenChange={setCalendarOpen}>
                     <PopoverTrigger asChild>
                       <FormControl>
                         <Button
@@ -167,7 +168,10 @@ export function TaskFormDialog({ open, onOpenChange, taskToEdit }: TaskFormDialo
                       <Calendar
                         mode="single"
                         selected={field.value}
-                        onSelect={field.onChange}
+                        onSelect={(date) => {
+                          field.onChange(date);
+                          setCalendarOpen(false);
+                        }}
                         disabled={(date) => date < new Date('1900-01-01')}
                         initialFocus
                       />

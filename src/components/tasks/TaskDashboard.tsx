@@ -9,14 +9,16 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { isToday } from 'date-fns';
-import type { Category, Priority } from '@/lib/types';
+import type { Task, Category, Priority } from '@/lib/types';
 import { ProductivityHub } from './ProductivityHub';
+import { FocusModeTimer } from './FocusModeTimer';
 
 export function TaskDashboard() {
-  const { state } = useTasks();
+  const { state, dispatch } = useTasks();
   const [categoryFilter, setCategoryFilter] = useState<Category | 'all'>('all');
   const [priorityFilter, setPriorityFilter] = useState<Priority | 'all'>('all');
   const [view, setView] = useState<'today' | 'all'>('today');
+  const [focusModeTask, setFocusModeTask] = useState<Task | null>(null);
 
   const tasksToDisplay = useMemo(() => {
     if (view === 'today') {
@@ -40,6 +42,23 @@ export function TaskDashboard() {
     return state.tasks.filter(task => isToday(task.dueDate));
   }, [state.tasks]);
 
+  const handleStartFocus = (task: Task) => {
+    setFocusModeTask(task);
+  };
+
+  const handleEndFocus = () => {
+    if (focusModeTask) {
+      // Here you might want to log the focused time to the task
+      // For now, we'll just end the focus mode
+      setFocusModeTask(null);
+    }
+  };
+  
+  const isFocusModeActive = focusModeTask !== null;
+
+  if (focusModeTask) {
+    return <FocusModeTimer activeTask={focusModeTask} onEnd={handleEndFocus} />;
+  }
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
@@ -56,7 +75,7 @@ export function TaskDashboard() {
         <Card>
           <CardContent className="p-4">
             <div className="flex flex-col sm:flex-row gap-4">
-               <Select value={view} onValueChange={(value) => setView(value as any)}>
+               <Select value={view} onValueChange={(value) => setView(value as any)} disabled={isFocusModeActive}>
                 <SelectTrigger className="w-full sm:w-[180px]">
                   <SelectValue placeholder="Filter by view" />
                 </SelectTrigger>
@@ -65,7 +84,7 @@ export function TaskDashboard() {
                   <SelectItem value="all">All Tasks</SelectItem>
                 </SelectContent>
               </Select>
-              <Select value={categoryFilter} onValueChange={(value) => setCategoryFilter(value as any)}>
+              <Select value={categoryFilter} onValueChange={(value) => setCategoryFilter(value as any)} disabled={isFocusModeActive}>
                 <SelectTrigger className="w-full sm:w-[180px]">
                   <SelectValue placeholder="Filter by category" />
                 </SelectTrigger>
@@ -77,7 +96,7 @@ export function TaskDashboard() {
                   <SelectItem value="Health">Health</SelectItem>
                 </SelectContent>
               </Select>
-              <Select value={priorityFilter} onValueChange={(value) => setPriorityFilter(value as any)}>
+              <Select value={priorityFilter} onValueChange={(value) => setPriorityFilter(value as any)} disabled={isFocusModeActive}>
                 <SelectTrigger className="w-full sm:w-[180px]">
                   <SelectValue placeholder="Filter by priority" />
                 </SelectTrigger>
@@ -92,9 +111,9 @@ export function TaskDashboard() {
           </CardContent>
         </Card>
 
-        <TaskList tasks={filteredTasks} />
+        <TaskList tasks={filteredTasks} onStartFocus={handleStartFocus} isFocusModeActive={isFocusModeActive} />
       </div>
-      <div className="space-y-6">
+      <div className={`space-y-6 ${isFocusModeActive ? 'opacity-50 pointer-events-none' : ''}`}>
         <ProductivityHub />
         <AssistantSuggestions tasks={todayTasks} />
         <QuickChecklist />
