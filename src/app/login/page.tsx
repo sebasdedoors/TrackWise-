@@ -74,7 +74,11 @@ export default function LoginPage() {
       toast({ title: 'Login Successful' });
       router.push('/');
     } catch (err: any) {
-      setError(err.message);
+      if (err.code === 'auth/popup-closed-by-user') {
+        setError('The sign-in popup was closed before completing. If you are the app owner, please ensure this domain is authorized in your Firebase project settings.');
+      } else {
+        setError(err.message);
+      }
     } finally {
         setIsGoogleSubmitting(false);
     }
