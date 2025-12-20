@@ -1,12 +1,13 @@
 "use client";
 
-import type { Task, ChecklistItem } from '@/lib/types';
+import type { Task, ChecklistItem, TaskTemplate, TemplateTask } from '@/lib/types';
 import React, { createContext, useReducer, useContext, useEffect, ReactNode, useState } from 'react';
 
 // STATE
 interface TasksState {
   tasks: Task[];
   checklistItems: ChecklistItem[];
+  templates: TaskTemplate[];
 }
 
 const initialState: TasksState = {
@@ -20,6 +21,17 @@ const initialState: TasksState = {
     { id: 'c1', text: 'Drink water', completed: true },
     { id: 'c2', text: 'Quick stand-up meeting', completed: false },
   ],
+  templates: [
+      {
+        id: 't1',
+        name: 'Morning Routine',
+        tasks: [
+            { id: 'tt1', title: 'Review daily priorities', category: 'Work', priority: 'High' },
+            { id: 'tt2', title: 'Check and respond to urgent emails', category: 'Work', priority: 'Medium' },
+            { id: 'tt3', title: '15-minute meditation', category: 'Health', priority: 'Low' },
+        ]
+      }
+  ],
 };
 
 // ACTIONS
@@ -32,7 +44,10 @@ type Action =
   | { type: 'TOGGLE_CHECKLIST_ITEM'; payload: string }
   | { type: 'DELETE_CHECKLIST_ITEM'; payload: string }
   | { type: 'SET_INITIAL_STATE'; payload: TasksState }
-  | { type: 'REORDER_TASKS'; payload: string[] };
+  | { type: 'REORDER_TASKS'; payload: string[] }
+  | { type: 'ADD_TEMPLATE'; payload: TaskTemplate }
+  | { type: 'DELETE_TEMPLATE'; payload: string }
+  | { type: 'APPLY_TEMPLATE'; payload: string };
 
 // REDUCER
 const tasksReducer = (state: TasksState, action: Action): TasksState => {
@@ -81,6 +96,23 @@ const tasksReducer = (state: TasksState, action: Action): TasksState => {
         };
     case 'DELETE_CHECKLIST_ITEM':
         return { ...state, checklistItems: state.checklistItems.filter((item) => item.id !== action.payload) };
+    case 'ADD_TEMPLATE':
+        return { ...state, templates: [...state.templates, action.payload] };
+    case 'DELETE_TEMPLATE':
+        return { ...state, templates: state.templates.filter(t => t.id !== action.payload) };
+    case 'APPLY_TEMPLATE': {
+        const template = state.templates.find(t => t.id === action.payload);
+        if (!template) return state;
+        
+        const newTasks = template.tasks.map(templateTask => ({
+            ...templateTask,
+            id: crypto.randomUUID(),
+            dueDate: new Date(),
+            completed: false,
+        }));
+        
+        return { ...state, tasks: [...state.tasks, ...newTasks] };
+    }
     default:
       return state;
   }
@@ -104,11 +136,21 @@ export const TasksProvider = ({ children }: { children: ReactNode }) => {
       const storedState = localStorage.getItem('trackwise_state');
       if (storedState) {
         const parsedState = JSON.parse(storedState);
-        parsedState.tasks = parsedState.tasks.map((task: any) => ({
-            ...task,
-            dueDate: new Date(task.dueDate),
-            completionDate: task.completionDate ? new Date(task.completionDate) : undefined,
-        }));
+        
+        // Ensure dates are correctly parsed
+        if (parsedState.tasks) {
+          parsedState.tasks = parsedState.tasks.map((task: any) => ({
+              ...task,
+              dueDate: new Date(task.dueDate),
+              completionDate: task.completionDate ? new Date(task.completionDate) : undefined,
+          }));
+        }
+
+        // Initialize templates if not present in stored state
+        if (!parsedState.templates) {
+            parsedState.templates = initialState.templates;
+        }
+
         dispatch({ type: 'SET_INITIAL_STATE', payload: parsedState });
       }
     } catch (error) {
