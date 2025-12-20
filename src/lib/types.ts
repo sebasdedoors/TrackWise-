@@ -16,3 +16,16 @@ export interface ChecklistItem {
   text: string;
   completed: boolean;
 }
+
+export interface TemplateTask {
+  id: string;
+  title: string;
+  category: Category;
+  priority: Priority;
+}
+
+export interface TaskTemplate {
+  id: string;
+  name: string;
+  tasks: TemplateTask[];
+}
