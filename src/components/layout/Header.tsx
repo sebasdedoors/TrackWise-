@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
@@ -8,12 +8,15 @@ import { Waves } from 'lucide-react';
 import { TemplateManagerDialog } from '@/components/templates/TemplateManagerDialog';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
+import { LanguageSelector } from './LanguageSelector';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export function Header() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isTemplateManagerOpen, setTemplateManagerOpen] = useState(false);
   const { user, signOut: firebaseSignOut } = useAuth();
   const router = useRouter();
+  const { t } = useLanguage();
 
   const handleSignOut = async () => {
     await firebaseSignOut();
@@ -28,20 +31,21 @@ export function Header() {
             <div className="flex items-center gap-2">
               <Waves className="h-6 w-6 text-primary" />
               <h1 className="text-xl font-bold text-foreground font-headline">
-                TrackWise
+                {t('trackWise')}
               </h1>
             </div>
             {user && (
               <div className="flex items-center gap-2">
+                <LanguageSelector />
                 <Button variant="outline" onClick={() => setTemplateManagerOpen(true)}>
                   <LayoutTemplate className="mr-2 h-4 w-4" />
-                  Manage Templates
+                  {t('manageTemplates')}
                 </Button>
                 <Button onClick={() => setIsFormOpen(true)}>
                   <PlusCircle className="mr-2 h-4 w-4" />
-                  Add Task
+                  {t('addTask')}
                 </Button>
-                 <Button variant="ghost" size="icon" onClick={handleSignOut} aria-label="Sign Out">
+                 <Button variant="ghost" size="icon" onClick={handleSignOut} aria-label={t('signOut')}>
                   <LogOut className="h-5 w-5" />
                 </Button>
               </div>

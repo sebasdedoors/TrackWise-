@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { categoryIcons, priorityStyles } from '@/components/icons';
 import { TaskFormDialog } from './TaskFormDialog';
 import { DeleteConfirmationDialog } from './DeleteConfirmationDialog';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface TaskCardProps {
   task: Task;
@@ -23,6 +24,7 @@ interface TaskCardProps {
 
 export function TaskCard({ task, onStartFocus, isFocusModeActive }: TaskCardProps) {
   const { dispatch } = useTasks();
+  const { t } = useLanguage();
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -70,11 +72,11 @@ export function TaskCard({ task, onStartFocus, isFocusModeActive }: TaskCardProp
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
               <div className="flex items-center gap-1">
                 <CategoryIcon className="h-3 w-3" />
-                <span>{task.category}</span>
+                <span>{t(task.category.toLowerCase() as any)}</span>
               </div>
               <div className={cn("flex items-center gap-1", priorityStyles[task.priority].color)}>
                 <PriorityIcon className="h-3 w-3" />
-                <span>{task.priority}</span>
+                <span>{t(task.priority.toLowerCase() as any)}</span>
               </div>
               <div className={cn(
                 "flex items-center gap-1",
@@ -88,24 +90,24 @@ export function TaskCard({ task, onStartFocus, isFocusModeActive }: TaskCardProp
           {!isFocusModeActive && (
             <Button variant="outline" size="sm" onClick={() => onStartFocus(task)}>
               <Star className="mr-2 h-4 w-4" />
-              Focus
+              {t('focus')}
             </Button>
           )}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" disabled={isFocusModeActive}>
                 <MoreVertical className="h-4 w-4" />
-                <span className="sr-only">More options</span>
+                <span className="sr-only">{t('moreOptions')}</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => setIsEditing(true)}>
                 <Edit className="mr-2 h-4 w-4" />
-                <span>Edit</span>
+                <span>{t('edit')}</span>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setIsDeleting(true)} className="text-destructive">
                 <Trash2 className="mr-2 h-4 w-4" />
-                <span>Delete</span>
+                <span>{t('delete')}</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
