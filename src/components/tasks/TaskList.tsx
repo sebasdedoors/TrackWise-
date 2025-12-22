@@ -3,6 +3,7 @@
 import React from 'react';
 import type { Task } from '@/lib/types';
 import { TaskCard } from './TaskCard';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface TaskListProps {
   tasks: Task[];
@@ -11,11 +12,13 @@ interface TaskListProps {
 }
 
 export function TaskList({ tasks, onStartFocus, isFocusModeActive = false }: TaskListProps) {
+  const { t } = useLanguage();
+
   if (tasks.length === 0) {
     return (
       <div className="text-center py-16 px-4 border-2 border-dashed rounded-lg">
-        <h2 className="text-xl font-semibold text-muted-foreground">No tasks for today!</h2>
-        <p className="mt-2 text-sm text-muted-foreground">Try adjusting your filters or adding a new task.</p>
+        <h2 className="text-xl font-semibold text-muted-foreground">{t('noTasksToday')}</h2>
+        <p className="mt-2 text-sm text-muted-foreground">{t('noTasksHint')}</p>
       </div>
     );
   }

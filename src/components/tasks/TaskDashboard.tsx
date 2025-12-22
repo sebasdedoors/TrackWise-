@@ -12,9 +12,11 @@ import { isToday } from 'date-fns';
 import type { Task, Category, Priority } from '@/lib/types';
 import { ProductivityHub } from './ProductivityHub';
 import { FocusModeTimer } from './FocusModeTimer';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export function TaskDashboard() {
   const { state, dispatch } = useTasks();
+  const { t } = useLanguage();
   const [categoryFilter, setCategoryFilter] = useState<Category | 'all'>('all');
   const [priorityFilter, setPriorityFilter] = useState<Priority | 'all'>('all');
   const [view, setView] = useState<'today' | 'all'>('today');
@@ -64,11 +66,11 @@ export function TaskDashboard() {
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
       <div className="lg:col-span-2 space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <h1 className="text-3xl font-bold tracking-tight font-headline">{view === 'today' ? "Today's Tasks" : "All Tasks"}</h1>
+          <h1 className="text-3xl font-bold tracking-tight font-headline">{view === 'today' ? t('todaysTasks') : t('allTasks')}</h1>
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <span>Pending: <span className="font-semibold text-foreground">{pendingCount}</span></span>
+            <span>{t('pending')}: <span className="font-semibold text-foreground">{pendingCount}</span></span>
             <Separator orientation="vertical" className="h-4" />
-            <span>Completed: <span className="font-semibold text-foreground">{completedCount}</span></span>
+            <span>{t('completed')}: <span className="font-semibold text-foreground">{completedCount}</span></span>
           </div>
         </div>
 
@@ -77,34 +79,34 @@ export function TaskDashboard() {
             <div className="flex flex-col sm:flex-row gap-4">
                <Select value={view} onValueChange={(value) => setView(value as any)} disabled={isFocusModeActive}>
                 <SelectTrigger className="w-full sm:w-[180px]">
-                  <SelectValue placeholder="Filter by view" />
+                  <SelectValue placeholder={t('filterByView')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="today">Today's Tasks</SelectItem>
-                  <SelectItem value="all">All Tasks</SelectItem>
+                  <SelectItem value="today">{t('todaysTasks')}</SelectItem>
+                  <SelectItem value="all">{t('allTasks')}</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={categoryFilter} onValueChange={(value) => setCategoryFilter(value as any)} disabled={isFocusModeActive}>
                 <SelectTrigger className="w-full sm:w-[180px]">
-                  <SelectValue placeholder="Filter by category" />
+                  <SelectValue placeholder={t('filterByCategory')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  <SelectItem value="Work">Work</SelectItem>
-                  <SelectItem value="School">School</SelectItem>
-                  <SelectItem value="Personal">Personal</SelectItem>
-                  <SelectItem value="Health">Health</SelectItem>
+                  <SelectItem value="all">{t('allCategories')}</SelectItem>
+                  <SelectItem value="Work">{t('work')}</SelectItem>
+                  <SelectItem value="School">{t('school')}</SelectItem>
+                  <SelectItem value="Personal">{t('personal')}</SelectItem>
+                  <SelectItem value="Health">{t('health')}</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={priorityFilter} onValueChange={(value) => setPriorityFilter(value as any)} disabled={isFocusModeActive}>
                 <SelectTrigger className="w-full sm:w-[180px]">
-                  <SelectValue placeholder="Filter by priority" />
+                  <SelectValue placeholder={t('filterByPriority')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Priorities</SelectItem>
-                  <SelectItem value="Low">Low</SelectItem>
-                  <SelectItem value="Medium">Medium</SelectItem>
-                  <SelectItem value="High">High</SelectItem>
+                  <SelectItem value="all">{t('allPriorities')}</SelectItem>
+                  <SelectItem value="Low">{t('low')}</SelectItem>
+                  <SelectItem value="Medium">{t('medium')}</SelectItem>
+                  <SelectItem value="High">{t('high')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>

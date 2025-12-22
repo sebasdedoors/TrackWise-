@@ -7,6 +7,7 @@ import { Flame, Target, TrendingUp, CheckCircle, CalendarDays } from 'lucide-rea
 import { startOfDay, differenceInCalendarDays, isSameDay } from 'date-fns';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { getDay, startOfWeek, endOfWeek, eachDayOfInterval, format } from 'date-fns';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const ProductivityStat = ({ icon: Icon, value, label, color }: { icon: React.ElementType, value: string | number, label: string, color?: string }) => (
   <div className="flex items-center gap-4">
@@ -22,6 +23,7 @@ const ProductivityStat = ({ icon: Icon, value, label, color }: { icon: React.Ele
 
 const WeeklyView = () => {
     const { state } = useTasks();
+    const { t } = useLanguage();
     const today = startOfDay(new Date());
     const weekStart = startOfWeek(today, { weekStartsOn: 1 }); // Monday
     const weekEnd = endOfWeek(today, { weekStartsOn: 1 });
@@ -38,7 +40,7 @@ const WeeklyView = () => {
 
     return (
         <div>
-            <h4 className="font-semibold text-sm mb-2">Weekly Overview</h4>
+            <h4 className="font-semibold text-sm mb-2">{t('weeklyOverview')}</h4>
             <div className="flex justify-between text-center text-xs">
                 {weekDays.map(day => {
                     const dayKey = format(day, 'yyyy-MM-dd');
@@ -67,6 +69,7 @@ const WeeklyView = () => {
 
 export function ProductivityHub() {
   const { state } = useTasks();
+  const { t } = useLanguage();
 
   const { streak, onTimePercentage, totalCompleted } = useMemo(() => {
     const completedTasks = state.tasks.filter(t => t.completed && t.completionDate);
@@ -117,16 +120,16 @@ export function ProductivityHub() {
       <CardHeader>
         <CardTitle className="font-headline text-xl flex items-center gap-2">
             <TrendingUp className="h-5 w-5 text-primary" />
-            Productivity Hub
+            {t('productivityHub')}
         </CardTitle>
-        <CardDescription>Your weekly performance and stats.</CardDescription>
+        <CardDescription>{t('productivityHubDescription')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <ProductivityStat icon={Flame} value={streak} label="Day Streak" color="text-orange-500" />
-            <ProductivityStat icon={Target} value={`${onTimePercentage}%`} label="On-Time Rate" color="text-green-500" />
-            <ProductivityStat icon={CheckCircle} value={totalCompleted} label="Total Completed" color="text-blue-500" />
-            <ProductivityStat icon={CalendarDays} value={7} label="Tasks This Week" />
+            <ProductivityStat icon={Flame} value={streak} label={t('dayStreak')} color="text-orange-500" />
+            <ProductivityStat icon={Target} value={`${onTimePercentage}%`} label={t('onTimeRate')} color="text-green-500" />
+            <ProductivityStat icon={CheckCircle} value={totalCompleted} label={t('totalCompleted')} color="text-blue-500" />
+            <ProductivityStat icon={CalendarDays} value={7} label={t('tasksThisWeek')} />
         </div>
         <WeeklyView />
       </CardContent>

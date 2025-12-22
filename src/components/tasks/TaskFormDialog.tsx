@@ -16,15 +16,16 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
+import { useLanguage } from '@/contexts/LanguageContext';
 
-const taskSchema = z.object({
-  title: z.string().min(3, { message: 'Title must be at least 3 characters.' }),
+const getTaskSchema = (t: (key: string) => string) => z.object({
+  title: z.string().min(3, { message: t('titleMinLength') }),
   category: z.enum(['Work', 'School', 'Personal', 'Health']),
   priority: z.enum(['Low', 'Medium', 'High']),
-  dueDate: z.date({ required_error: 'A due date is required.' }),
+  dueDate: z.date({ required_error: t('dueDateRequired') }),
 });
 
-type TaskFormValues = z.infer<typeof taskSchema>;
+type TaskFormValues = z.infer<ReturnType<typeof getTaskSchema>>;
 
 interface TaskFormDialogProps {
   open: boolean;
@@ -34,7 +35,10 @@ interface TaskFormDialogProps {
 
 export function TaskFormDialog({ open, onOpenChange, taskToEdit }: TaskFormDialogProps) {
   const { dispatch } = useTasks();
+  const { t } = useLanguage();
   const [isCalendarOpen, setCalendarOpen] = useState(false);
+  const taskSchema = getTaskSchema(t);
+
   const form = useForm<TaskFormValues>({
     resolver: zodResolver(taskSchema),
     defaultValues: {
@@ -76,9 +80,9 @@ export function TaskFormDialog({ open, onOpenChange, taskToEdit }: TaskFormDialo
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{taskToEdit ? 'Edit Task' : 'Add New Task'}</DialogTitle>
+          <DialogTitle>{taskToEdit ? t('editTask') : t('newTask')}</DialogTitle>
           <DialogDescription>
-            {taskToEdit ? 'Update the details of your task.' : 'Fill in the details for your new task.'}
+            {taskToEdit ? t('updateTaskDescription') : t('newTaskDescription')}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -88,9 +92,9 @@ export function TaskFormDialog({ open, onOpenChange, taskToEdit }: TaskFormDialo
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Title</FormLabel>
+                  <FormLabel>{t('taskTitle')}</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. Finish project report" {...field} />
+                    <Input placeholder={t('titlePlaceholder')} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -102,18 +106,18 @@ export function TaskFormDialog({ open, onOpenChange, taskToEdit }: TaskFormDialo
                 name="category"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Category</FormLabel>
+                    <FormLabel>{t('taskCategory')}</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select a category" />
+                          <SelectValue placeholder={t('selectCategory')} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="Work">Work</SelectItem>
-                        <SelectItem value="School">School</SelectItem>
-                        <SelectItem value="Personal">Personal</SelectItem>
-                        <SelectItem value="Health">Health</SelectItem>
+                        <SelectItem value="Work">{t('work')}</SelectItem>
+                        <SelectItem value="School">{t('school')}</SelectItem>
+                        <SelectItem value="Personal">{t('personal')}</SelectItem>
+                        <SelectItem value="Health">{t('health')}</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -125,17 +129,17 @@ export function TaskFormDialog({ open, onOpenChange, taskToEdit }: TaskFormDialo
                 name="priority"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Priority</FormLabel>
+                    <FormLabel>{t('taskPriority')}</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select a priority" />
+                          <SelectValue placeholder={t('selectPriority')} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="Low">Low</SelectItem>
-                        <SelectItem value="Medium">Medium</SelectItem>
-                        <SelectItem value="High">High</SelectItem>
+                        <SelectItem value="Low">{t('low')}</SelectItem>
+                        <SelectItem value="Medium">{t('medium')}</SelectItem>
+                        <SelectItem value="High">{t('high')}</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -148,7 +152,7 @@ export function TaskFormDialog({ open, onOpenChange, taskToEdit }: TaskFormDialo
               name="dueDate"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>Due Date</FormLabel>
+                  <FormLabel>{t('taskDueDate')}</FormLabel>
                   <Popover open={isCalendarOpen} onOpenChange={setCalendarOpen}>
                     <PopoverTrigger asChild>
                       <FormControl>
@@ -159,7 +163,7 @@ export function TaskFormDialog({ open, onOpenChange, taskToEdit }: TaskFormDialo
                             !field.value && 'text-muted-foreground'
                           )}
                         >
-                          {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
+                          {field.value ? format(field.value, 'PPP') : <span>{t('pickDate')}</span>}
                           <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                         </Button>
                       </FormControl>
@@ -169,7 +173,7 @@ export function TaskFormDialog({ open, onOpenChange, taskToEdit }: TaskFormDialo
                         mode="single"
                         selected={field.value}
                         onSelect={(date) => {
-                          field.onChange(date);
+                          if (date) field.onChange(date);
                           setCalendarOpen(false);
                         }}
                         disabled={(date) => date < new Date('1900-01-01')}
@@ -182,10 +186,10 @@ export function TaskFormDialog({ open, onOpenChange, taskToEdit }: TaskFormDialo
               )}
             />
             <DialogFooter>
-              <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
+              <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>{t('cancel')}</Button>
               <Button type="submit" disabled={form.formState.isSubmitting}>
                 {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {taskToEdit ? 'Save Changes' : 'Create Task'}
+                {taskToEdit ? t('saveChanges') : t('createTask')}
               </Button>
             </DialogFooter>
           </form>

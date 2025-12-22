@@ -9,11 +9,13 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Plus, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export function QuickChecklist() {
   const { state, dispatch } = useTasks();
   const [newItemText, setNewItemText] = useState('');
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const handleAddItem = (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,8 +23,8 @@ export function QuickChecklist() {
 
     if (state.checklistItems.length >= 5) {
         toast({
-            title: "Checklist is full",
-            description: "You can only have a maximum of 5 items in your quick checklist.",
+            title: t('quickChecklistFull'),
+            description: t('quickChecklistFullDescription'),
             variant: "destructive",
         })
       return;
@@ -40,14 +42,14 @@ export function QuickChecklist() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-headline text-xl">Quick Checklist</CardTitle>
+        <CardTitle className="font-headline text-xl">{t('quickChecklist')}</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleAddItem} className="flex gap-2 mb-4">
           <Input
             value={newItemText}
             onChange={(e) => setNewItemText(e.target.value)}
-            placeholder="Add a quick item..."
+            placeholder={t('addQuickItem')}
             disabled={state.checklistItems.length >= 5}
           />
           <Button type="submit" size="icon" disabled={state.checklistItems.length >= 5}>
@@ -82,7 +84,7 @@ export function QuickChecklist() {
             </div>
           ))}
            {state.checklistItems.length === 0 && (
-            <p className="text-sm text-center text-muted-foreground py-4">Add up to 5 quick items.</p>
+            <p className="text-sm text-center text-muted-foreground py-4">{t('addUpTo5')}</p>
            )}
         </div>
       </CardContent>
