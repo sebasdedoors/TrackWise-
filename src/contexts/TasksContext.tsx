@@ -1,24 +1,36 @@
 "use client";
 
-import type { Task, ChecklistItem } from '@/lib/types';
+import type { Task, ChecklistItem, TaskTemplate, TemplateTask } from '@/lib/types';
 import React, { createContext, useReducer, useContext, useEffect, ReactNode, useState } from 'react';
 
 // STATE
 interface TasksState {
   tasks: Task[];
   checklistItems: ChecklistItem[];
+  templates: TaskTemplate[];
 }
 
 const initialState: TasksState = {
   tasks: [
     { id: '1', title: 'Design new dashboard layout', category: 'Work', priority: 'High', dueDate: new Date(), completed: false },
     { id: '2', title: 'Read chapter 3 of chemistry book', category: 'School', priority: 'Medium', dueDate: new Date(), completed: false },
-    { id: '3', title: 'Go for a 30-minute run', category: 'Health', priority: 'Low', dueDate: new Date(), completed: true },
+    { id: '3', title: 'Go for a 30-minute run', category: 'Health', priority: 'Low', dueDate: new Date(), completed: true, completionDate: new Date() },
     { id: '4', title: 'Schedule dentist appointment', category: 'Personal', priority: 'Medium', dueDate: new Date(), completed: false },
   ],
   checklistItems: [
     { id: 'c1', text: 'Drink water', completed: true },
     { id: 'c2', text: 'Quick stand-up meeting', completed: false },
+  ],
+  templates: [
+      {
+        id: 't1',
+        name: 'Morning Routine',
+        tasks: [
+            { id: 'tt1', title: 'Review daily priorities', category: 'Work', priority: 'High' },
+            { id: 'tt2', title: 'Check and respond to urgent emails', category: 'Work', priority: 'Medium' },
+            { id: 'tt3', title: '15-minute meditation', category: 'Health', priority: 'Low' },
+        ]
+      }
   ],
 };
 
@@ -31,7 +43,11 @@ type Action =
   | { type: 'ADD_CHECKLIST_ITEM'; payload: ChecklistItem }
   | { type: 'TOGGLE_CHECKLIST_ITEM'; payload: string }
   | { type: 'DELETE_CHECKLIST_ITEM'; payload: string }
-  | { type: 'SET_INITIAL_STATE'; payload: TasksState };
+  | { type: 'SET_INITIAL_STATE'; payload: TasksState }
+  | { type: 'REORDER_TASKS'; payload: string[] }
+  | { type: 'ADD_TEMPLATE'; payload: TaskTemplate }
+  | { type: 'DELETE_TEMPLATE'; payload: string }
+  | { type: 'APPLY_TEMPLATE'; payload: string };
 
 // REDUCER
 const tasksReducer = (state: TasksState, action: Action): TasksState => {
@@ -50,10 +66,24 @@ const tasksReducer = (state: TasksState, action: Action): TasksState => {
     case 'TOGGLE_TASK_COMPLETION':
       return {
         ...state,
-        tasks: state.tasks.map((task) =>
-          task.id === action.payload ? { ...task, completed: !task.completed } : task
-        ),
+        tasks: state.tasks.map((task) => {
+          if (task.id === action.payload) {
+            const isCompleted = !task.completed;
+            return { 
+              ...task, 
+              completed: isCompleted,
+              completionDate: isCompleted ? new Date() : undefined,
+            };
+          }
+          return task;
+        }),
       };
+    case 'REORDER_TASKS': {
+      const taskMap = new Map(state.tasks.map(task => [task.id, task]));
+      const orderedTasks = action.payload.map(id => taskMap.get(id)).filter((t): t is Task => !!t);
+      const remainingTasks = state.tasks.filter(task => !action.payload.includes(task.id));
+      return { ...state, tasks: [...orderedTasks, ...remainingTasks] };
+    }
     case 'ADD_CHECKLIST_ITEM':
         if (state.checklistItems.length >= 5) return state;
         return { ...state, checklistItems: [...state.checklistItems, action.payload] };
@@ -66,6 +96,23 @@ const tasksReducer = (state: TasksState, action: Action): TasksState => {
         };
     case 'DELETE_CHECKLIST_ITEM':
         return { ...state, checklistItems: state.checklistItems.filter((item) => item.id !== action.payload) };
+    case 'ADD_TEMPLATE':
+        return { ...state, templates: [...state.templates, action.payload] };
+    case 'DELETE_TEMPLATE':
+        return { ...state, templates: state.templates.filter(t => t.id !== action.payload) };
+    case 'APPLY_TEMPLATE': {
+        const template = state.templates.find(t => t.id === action.payload);
+        if (!template) return state;
+        
+        const newTasks = template.tasks.map(templateTask => ({
+            ...templateTask,
+            id: crypto.randomUUID(),
+            dueDate: new Date(),
+            completed: false,
+        }));
+        
+        return { ...state, tasks: [...state.tasks, ...newTasks] };
+    }
     default:
       return state;
   }
@@ -89,10 +136,21 @@ export const TasksProvider = ({ children }: { children: ReactNode }) => {
       const storedState = localStorage.getItem('trackwise_state');
       if (storedState) {
         const parsedState = JSON.parse(storedState);
-        parsedState.tasks = parsedState.tasks.map((task: any) => ({
-            ...task,
-            dueDate: new Date(task.dueDate)
-        }));
+        
+        // Ensure dates are correctly parsed
+        if (parsedState.tasks) {
+          parsedState.tasks = parsedState.tasks.map((task: any) => ({
+              ...task,
+              dueDate: new Date(task.dueDate),
+              completionDate: task.completionDate ? new Date(task.completionDate) : undefined,
+          }));
+        }
+
+        // Initialize templates if not present in stored state
+        if (!parsedState.templates) {
+            parsedState.templates = initialState.templates;
+        }
+
         dispatch({ type: 'SET_INITIAL_STATE', payload: parsedState });
       }
     } catch (error) {

@@ -8,10 +8,24 @@ export interface Task {
   priority: Priority;
   dueDate: Date;
   completed: boolean;
+  completionDate?: Date;
 }
 
 export interface ChecklistItem {
   id: string;
   text: string;
   completed: boolean;
+}
+
+export interface TemplateTask {
+  id: string;
+  title: string;
+  category: Category;
+  priority: Priority;
+}
+
+export interface TaskTemplate {
+  id: string;
+  name: string;
+  tasks: TemplateTask[];
 }
