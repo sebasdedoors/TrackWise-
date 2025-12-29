@@ -13,6 +13,7 @@ import { Lightbulb, Loader2 } from 'lucide-react';
 import type { Task } from '@/lib/types';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useLanguage } from '@/contexts/LanguageContext';
+import { format } from 'date-fns';
 
 export function AssistantSuggestions({ tasks }: { tasks: Task[] }) {
   const [loading, setLoading] = useState(false);
@@ -31,10 +32,16 @@ export function AssistantSuggestions({ tasks }: { tasks: Task[] }) {
     try {
       const tasksForAI = tasks.map(task => ({
         ...task,
-        dueDate: task.dueDate.toISOString(),
+        dueDate: format(task.dueDate, 'yyyy-MM-dd'),
       }));
       const result = await suggestTaskOrder({ tasks: tasksForAI });
-      setSuggestion(result);
+
+      if (result.reasoning.includes('Error al generar sugerencias')) {
+        setError(result.reasoning);
+      } else {
+        setSuggestion(result);
+      }
+
     } catch (e) {
       setError(t('getSuggestionError'));
       console.error(e);
@@ -94,7 +101,7 @@ export function AssistantSuggestions({ tasks }: { tasks: Task[] }) {
             </div>
           </div>
         )}
-        {!loading && !suggestion && (
+        {!loading && !suggestion && !error && (
              <p className="text-sm text-center text-muted-foreground py-4">
                 {tasks.length > 1 ? t('getSuggestionPrompt') : t('addTasksPrompt')}
             </p>

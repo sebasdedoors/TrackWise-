@@ -15,7 +15,9 @@ const TaskSchema = z.object({
   title: z.string(),
   category: z.string(),
   priority: z.string(),
-  dueDate: z.string().datetime(), 
+  dueDate: z
+    .string()
+    .describe('La fecha de vencimiento de la tarea en formato AAAA-MM-DD.'),
 });
 
 const SuggestTaskOrderInputSchema = z.object({
@@ -33,7 +35,9 @@ const SuggestTaskOrderOutputSchema = z.object({
       'Una explicación concisa de por qué se eligió este orden, destacando la estrategia de priorización.'
     ),
 });
-export type SuggestTaskOrderOutput = z.infer<typeof SuggestTaskOrderOutputSchema>;
+export type SuggestTaskOrderOutput = z.infer<
+  typeof SuggestTaskOrderOutputSchema
+>;
 
 export async function suggestTaskOrder(
   input: SuggestTaskOrderInput
@@ -47,18 +51,18 @@ const prompt = ai.definePrompt({
   output: { schema: SuggestTaskOrderOutputSchema },
   prompt: `Eres un asistente de productividad experto. Tu objetivo es ayudar a los usuarios a ordenar sus tareas diarias para una máxima eficiencia.
 
-Analiza la siguiente lista de tareas para el día de hoy. Considera la prioridad, categoría y el título de cada tarea para determinar el mejor orden de ejecución.
+Analiza la siguiente lista de tareas para el día de hoy. Considera la prioridad, categoría, fecha de vencimiento y el título de cada tarea para determinar el mejor orden de ejecución.
 
 Tareas:
 {{#each tasks}}
-- ID: {{id}}, Título: "{{title}}", Categoría: {{category}}, Prioridad: {{priority}}
+- ID: {{id}}, Título: "{{title}}", Categoría: {{category}}, Prioridad: {{priority}}, Vencimiento: {{dueDate}}
 {{/each}}
 
-Devuelve un objeto JSON con dos claves:
+Tu respuesta DEBE ser un objeto JSON válido con dos claves:
 1.  'orderedTaskIds': Un array de los IDs de las tareas en el orden que sugieres que se completen.
 2.  'reasoning': Una breve explicación (1-2 frases) de tu estrategia. Por ejemplo, "Recomiendo empezar con las tareas de alta prioridad para asegurar que se completen, seguido de un trabajo enfocado en una categoría específica."
 
-Prioriza las tareas de alta prioridad primero. Agrupa las tareas por categoría cuando sea posible para minimizar el cambio de contexto. Las tareas de baja prioridad deben ir al final.`,
+Prioriza las tareas de alta prioridad primero. Agrupa las tareas por categoría cuando sea posible para minimizar el cambio de contexto. Las tareas de baja prioridad deben ir al final. Si no puedes determinar un orden, devuelve un array vacío para 'orderedTaskIds' y una razón.`,
 });
 
 const suggestTaskOrderFlow = ai.defineFlow(
@@ -76,9 +80,13 @@ const suggestTaskOrderFlow = ai.defineFlow(
     }
     try {
       const { output } = await prompt(input);
-      return output!;
+      if (!output) {
+        throw new Error('La respuesta de la IA fue nula o indefinida.');
+      }
+      return output;
     } catch (error) {
-      console.error('Error suggesting task order:', error);
+      console.error('Error al sugerir el orden de las tareas:', error);
+      // Devuelve un estado de error claro que la UI puede manejar
       return {
         orderedTaskIds: input.tasks.map((t) => t.id),
         reasoning:
