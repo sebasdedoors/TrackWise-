@@ -15,7 +15,7 @@ const TaskSchema = z.object({
   title: z.string(),
   category: z.string(),
   priority: z.string(),
-  dueDate: z.string().datetime(), 
+  dueDate: z.string(), 
 });
 
 const SuggestTaskOrderInputSchema = z.object({
@@ -51,7 +51,7 @@ Analiza la siguiente lista de tareas para el día de hoy. Considera la prioridad
 
 Tareas:
 {{#each tasks}}
-- ID: {{id}}, Título: "{{title}}", Categoría: {{category}}, Prioridad: {{priority}}
+- ID: {{id}}, Título: "{{title}}", Categoría: {{category}}, Prioridad: {{priority}}, Fecha Límite: {{dueDate}}
 {{/each}}
 
 Devuelve un objeto JSON con dos claves:

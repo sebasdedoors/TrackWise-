@@ -13,6 +13,7 @@ import { Lightbulb, Loader2 } from 'lucide-react';
 import type { Task } from '@/lib/types';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useLanguage } from '@/contexts/LanguageContext';
+import { format } from 'date-fns';
 
 export function AssistantSuggestions({ tasks }: { tasks: Task[] }) {
   const [loading, setLoading] = useState(false);
@@ -31,7 +32,7 @@ export function AssistantSuggestions({ tasks }: { tasks: Task[] }) {
     try {
       const tasksForAI = tasks.map(task => ({
         ...task,
-        dueDate: task.dueDate.toISOString(),
+        dueDate: format(task.dueDate, 'yyyy-MM-dd'),
       }));
       const result = await suggestTaskOrder({ tasks: tasksForAI });
       setSuggestion(result);
