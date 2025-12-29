@@ -4,7 +4,6 @@ import React, { useState, useMemo } from 'react';
 import { useTasks } from '@/contexts/TasksContext';
 import { TaskList } from '@/components/tasks/TaskList';
 import { QuickChecklist } from '@/components/tasks/QuickChecklist';
-import { AssistantSuggestions } from '@/components/tasks/AssistantSuggestions';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
@@ -39,10 +38,6 @@ export function TaskDashboard() {
 
   const pendingCount = useMemo(() => filteredTasks.filter(t => !t.completed).length, [filteredTasks]);
   const completedCount = useMemo(() => filteredTasks.filter(t => t.completed).length, [filteredTasks]);
-
-  const todayTasks = useMemo(() => {
-    return state.tasks.filter(task => isToday(task.dueDate));
-  }, [state.tasks]);
 
   const handleStartFocus = (task: Task) => {
     setFocusModeTask(task);
@@ -117,7 +112,6 @@ export function TaskDashboard() {
       </div>
       <div className={`space-y-6 ${isFocusModeActive ? 'opacity-50 pointer-events-none' : ''}`}>
         <ProductivityHub />
-        <AssistantSuggestions tasks={todayTasks} />
         <QuickChecklist />
       </div>
     </div>
